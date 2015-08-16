@@ -1,0 +1,14 @@
+(lp0
+S'poi'
+p1
+aS'salary'
+p2
+aS'bonus'
+p3
+aS'other'
+p4
+aS'milk'
+p5
+aS'fraction_of_deferred_income_to_total_payments'
+p6
+a.
