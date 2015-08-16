@@ -2,14 +2,14 @@
 #### Udacity Machine Learning Final Project
 
 ## Included Files
-* report.pdf - detailed description of analysis
+* [report.pdf](https://github.com/yxes/ud120/blob/master/report.pdf) - detailed description of analysis
 * tester.py - used to test results
 * data files
     * my_datset.pkl
     * my_classifier.pkl
     * my_feature_list.pkl
 * poi_id.py - ML script
-* CITATIONS.md
+* [CITATIONS.md](https://github.com/yxes/ud120/blob/master/CITATIONS.md)
 * results.csv - 1,000 iterations of algorithm performance
 
 ## Description
