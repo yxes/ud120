@@ -27,7 +27,7 @@ You will need to install the following python libraries:
 * numpy
 * pickle
 * sklearn
-* isnan
+* math 
 
 It should also be noted that this code has only been
 tested on python version 2.7 any other version is at
