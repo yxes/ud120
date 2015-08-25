@@ -31,11 +31,11 @@ from tester import test_classifier, dump_classifier_and_data
 """
 features_list = [
                  'poi',
-                 'salary',
+                 'exercised_stock_options',
                  'bonus',
-                 'other',
-                 'milk',
-                 'fraction_of_deferred_income_to_total_payments'
+                 'total_stock_value',
+                 'fraction_of_deferred_income_to_total_payments',
+                 'milk'
                 ]
 
 ### Load the dictionary containing the dataset
@@ -85,16 +85,62 @@ labels, features = targetFeatureSplit(data)
 ### Note that if you want to do PCA or other multi-stage operations,
 ### you'll need to use Pipelines. For more info:
 ### http://scikit-learn.org/stable/modules/pipeline.html
+from sklearn.cross_validation import StratifiedShuffleSplit
+
+def prec_recall (clf, data, feature_list, folds=1000):
+    labels, features = targetFeatureSplit(data)
+    cv = StratifiedShuffleSplit(labels, folds, random_state = 42)
+    # true negative / false negative / true positive / false positive
+    results = { 'tn': 0, 'fn': 0, 'tp': 0, 'fp': 0 }
+    for train_idx, test_idx in cv:
+        feature = { 'train': [], 'test': [] }
+        label = { 'train': [], 'test': [] }
+        for idx in train_idx:
+            feature['train'].append(features[idx])
+            label['train'].append(labels[idx])
+        for idx in test_idx:
+            feature['test'].append(features[idx])
+            label['test'].append(labels[idx])
+
+        # fit classifier using training
+        clf.fit(feature['train'], label['train'])
+        predictions = clf.predict(feature['test'])
+        for prediction, truth in zip(predictions, label['test']):
+            if prediction == 0 and truth == 0: # T / Neg
+                results['tn'] += 1
+            elif prediction == 0 and truth == 1: # F / Neg
+                results['fn'] += 1
+            elif prediction == 1 and truth == 0: # F / Pos
+                results['fp'] += 1
+            elif prediction == 1 and truth == 1: # T / Pos
+                results['tp'] += 1
+            else:
+                print "Warning: Found a predicted label that's not 0 or 1"
+                break
+
+    try:
+        precision = 1.0 * results['tp']/(results['tp']+results['fp'])
+        recall = 1.0 * results['tp']/(results['tp']+results['fn'])
+    except:
+        print "Got a divide by zero when trying out:", clf
+
+    return (precision, recall)
 
 ## NAIVE BAYES
 #from sklearn.naive_bayes import GaussianNB
 #clf = GaussianNB()
 
 ## SUPPORT VECTOR MACHINE
+# Scaler - for use with SVC and LinearSVC
+#from sklearn.preprocessing import MinMaxScaler
+#min_max_scalar = MinMaxScaler()
+#data = min_max_scalar.fit_transform(data)
+
+# SVC
 #from sklearn.svm import SVC
 #clf = SVC(kernel="linear")
 
-## LINEAR SUPPORT VECTOR MACHINE
+# LINEAR SUPPORT VECTOR MACHINE
 #from sklearn.svm import LinearSVC
 #clf = LinearSVC()
 
@@ -126,8 +172,43 @@ from sklearn import tree
 #})
 
 # TUNED RESULT
+print "\n","-"*34
+print " Decision Tree Classifier Results"
+print "-"*34
 clf = tree.DecisionTreeClassifier(splitter="random")
-test_classifier(clf, my_dataset, features_list)
+precision, recall = prec_recall(clf, data, features_list)
+print "\nPrecision:", precision
+print "   Recall:", recall
+print ""
+
+## Write out precision and recall values to results.csv to obtain statisical averages
+#f = open('results.csv', 'w')
+#f.write("Precision,Recall\n")
+#
+#precision_numbers = []
+#recall_numbers = []
+#for iteration in range(1000):
+#    precision, recall = prec_recall(clf, data, features_list)
+#    f.write("%f,%f\n"%(precision,recall))
+#    precision_numbers.append(precision)
+#    recall_numbers.append(recall)
+#
+#import numpy
+#print "     PRECISION:"
+#print "          Mean:",numpy.mean(precision_numbers)
+#print "        Median:",numpy.median(precision_numbers)
+#print "           Max:",max(precision_numbers)
+#print "           Min:",min(precision_numbers)
+#print "First Quartile:", numpy.percentile(precision_numbers, 25)
+#print "Third Quartile:", numpy.percentile(precision_numbers, 75)
+#print ""
+#print "        RECALL"
+#print "          Mean:",numpy.mean(recall_numbers)
+#print "        Median:",numpy.median(recall_numbers)
+#print "           Max:",max(recall_numbers)
+#print "           Min:",min(recall_numbers)
+#print "First Quartile:", numpy.percentile(recall_numbers, 25)
+#print "Third Quartile:", numpy.percentile(recall_numbers, 75)
 
 #### Feature Importance
 ## Uncomment to review the performance of individual features
@@ -137,8 +218,9 @@ test_classifier(clf, my_dataset, features_list)
 #print "Weight\tFeature"
 #print "------\t-------"
 #for idx, feature in enumerate(features_list[1:]):
-#    print "%.2f \t%s" % (importances[idx], feature)
+#    print " %.2f \t%s" % (importances[idx], feature)
 
 ### Dump your classifier, dataset, and features_list so 
 ### anyone can run/check your results.
 dump_classifier_and_data(clf, my_dataset, features_list)
+

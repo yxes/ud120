@@ -11,6 +11,8 @@
 * poi_id.py - ML script
 * [CITATIONS.md](https://github.com/yxes/ud120/blob/master/CITATIONS.md)
 * results.csv - 1,000 iterations of algorithm performance
+* feature_engineering.py - details use of sklearn.SelectPercentile
+* initial_submission.pdf - orginal submission report 
 
 ## Description
 Python-based machine learning exercise, utilizing emails
